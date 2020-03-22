@@ -1,10 +1,25 @@
 #include "mbed.h"
 
-// main() runs in its own thread in the OS
+const int BAUD_RATE = 9600;
+
+Serial device(USBTX, USBRX);
+
+void setup()
+{
+    device.baud(BAUD_RATE);
+}
+
+void loop()
+{
+    while (true)
+    {
+        device.printf("Hello serial!\n");
+    }
+}
+
 int main()
 {
-    while (true) {
-
-    }
+    setup();
+    loop();
 }
 
