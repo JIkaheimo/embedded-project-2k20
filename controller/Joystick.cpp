@@ -5,7 +5,7 @@ Joystick::Joystick(const PinName horizontalPin, const PinName verticalPin, const
     _vertical(verticalPin), 
     _button(buttonPin, PullUp) 
 {
-    // "Automatically" calibrate joystick axis data.
+    // "Automatically" try to calibrate joystick axis readings.
     _verticalCalib = _vertical.read();
     _horizontalCalib = _horizontal.read();
 
@@ -20,11 +20,9 @@ void Joystick::pollInput()
     float verticalRaw =     2.0f * (_vertical.read() - _verticalCalib); 
     
     // Convert raw sensor data to circular grid.
-    _horizontalData = horizontalRaw * sqrt(1.0f - pow(verticalRaw, 2.0f) / 2.0f);
-    _verticalData = verticalRaw * sqrt(1.0f - pow(horizontalRaw, 2.0f) / 2.0f);
-    _tilt.vertical = _verticalData;
-    _tilt.horizontal = _horizontalData;
-
+    _tilt.horizontal = horizontalRaw * sqrt(1.0f - pow(verticalRaw, 2.0f) / 2.0f);
+    _tilt.vertical = verticalRaw * sqrt(1.0f - pow(horizontalRaw, 2.0f) / 2.0f);
+    
     bool pressed = _button.read() == 0;
     if (_lastPressed != pressed)
     {
@@ -36,25 +34,31 @@ void Joystick::pollInput()
 
 Joystick::Tilt Joystick::readTilt()
 {
-    _horizontalData = 0.0f;
-    _verticalData = 0.0f;
-    return _tilt;
+    Tilt tempTilt;
+    tempTilt = _tilt;
+    
+    _tilt.horizontal = 0.0f;
+    _tilt.vertical = 0.0f;
+
+    return tempTilt;
 }
 
-bool Joystick::isTilted()
+const bool Joystick::isTilted() const
 /**
  * isTilted() returns true if the analog stick is tilted.
  */
 {
-    return (abs(_horizontalData) + abs(_verticalData)) > 0.02f;
+    return (abs(_tilt.horizontal) + abs(_tilt.vertical)) > 0.02f;
 }
 
-bool Joystick::isPressed()
+
+const bool Joystick::isPressed() const
 {
-    return _pressed != false;
+    return _pressed;
 }
 
-bool Joystick::readPressed()
+
+const bool Joystick::readPressed()
 {
     // Reset keys' state.
     _lastPressed = _pressed;

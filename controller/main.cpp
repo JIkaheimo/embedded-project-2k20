@@ -15,11 +15,11 @@ Serial device(USBTX, USBRX);
 /**********************
  ** JOYSTICK CONFIGS ** 
  **********************/
-const PinName X_JOY = A0;
-const PinName Y_JOY = A1;
-const PinName B_JOY = D8;
+const PinName HORIZONTAL_JOY = A0;
+const PinName VERTICAL_JOY = A1;
+const PinName BUTTON_JOY = D8;
 
-Joystick joystick(X_JOY, Y_JOY, B_JOY);
+Joystick joystick(HORIZONTAL_JOY, VERTICAL_JOY, BUTTON_JOY);
 
 
 /***********************
@@ -58,7 +58,7 @@ void loop()
         // Check for ADKey input events.
         if (device.writable() && buttons.isPressed()) 
         {
-            device.printf("%c\n", buttons.readKey());
+            device.printf("ADKey:Button %c\n", buttons.readKey());
         }
 
         /********** JOYSTICK ************/
@@ -70,16 +70,17 @@ void loop()
         if (device.writable())
         {
             // Check for Joystick input events.
+            
             if (joystick.isPressed()) 
             {
                 joystick.readPressed();
-                device.printf("JB\n");
+                device.printf("Joystick:Button\n");
             } 
             
             if (joystick.isTilted()) 
             {
                 Joystick::Tilt tilt = joystick.readTilt();
-                device.printf("JT %.2f %.2f\n", tilt.horizontal, tilt.vertical);
+                device.printf("Joystick:Tilt %.2f %.2f\n", tilt.horizontal, tilt.vertical);
             }
         }
     }

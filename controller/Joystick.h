@@ -16,22 +16,22 @@ class Joystick
  * - 3.3V   = tilted down
  */
 {
-
     public:
-        struct Tilt {
-            float horizontal;
-            float vertical;
+        struct Tilt 
+        {
+            float horizontal = 0.0f;
+            float vertical = 0.0f;
         };
 
-        Joystick(PinName = A0, PinName = A1, PinName = D8);
+        Joystick(PinName horizontalPin = A0, PinName verticalPin = A1, PinName buttonPin = D8);
 
         void pollInput();
 
-        bool isPressed();
-        bool isTilted();
+        const bool isPressed() const;
+        const bool isTilted() const;
 
         Tilt readTilt();
-        bool readPressed();
+        const bool readPressed();
 
     private:
         AnalogIn _vertical;
@@ -41,7 +41,6 @@ class Joystick
         float _verticalCalib;
         float _horizontalCalib;
 
-        bool _isPressed;
         bool _pressed;
         bool _lastPressed;
 
