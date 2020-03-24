@@ -2,35 +2,24 @@ import serial
 import serial.tools.list_ports
 import socketio
 
+import asyncio
+import serial_asyncio
+
 
 # Serial configs
-SERIAL_PORT = '/dev/ttyACM0'
 BAUD_RATE = 9600
-PARITY = serial.PARITY_NONE
-STOP_BITS = serial.STOPBITS_ONE
-BYTE_SIZE = serial.EIGHTBITS
-TIMEOUT = 1
 
 
-def initSerial(nucleoPort):
-    """
-    Initializes a serial connection
-    with a controller device.
-    """
+async def serialWorker(eventLoop, port):
+    reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=BAUD_RATE)
+    print("Connection established!")
 
-    return serial.Serial(
-        port=nucleoPort,
-        baudrate=BAUD_RATE,
-        parity=PARITY,
-        stopbits=STOP_BITS,
-        bytesize=BYTE_SIZE,
-        timeout=TIMEOUT
-    )
-# initSerial end
+    # Read serial input
+    while True:
+        msg = await reader.readuntil(b'\n')
 
 
 if __name__ == '__main__':
-
     nucleoPort = None
 
     # Get port number for Nucleo.
@@ -38,13 +27,6 @@ if __name__ == '__main__':
         if (identifier.startswith("STMicroelectronics")):
             nucleoPort = port
 
-    print(nucleoPort)
-
-    # Make sure Nucleo is available.
-    if nucleoPort == None:
-        print("Could not detect connected Nucleo. Please make sure it is correctly connected...")
-        sys.exit()
-
-    device = initSerial(nucleoPort)
-    # Connect to serial port (controller).
-    # device = initSerial()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(serialWorker(loop, port))
+    loop.close()
