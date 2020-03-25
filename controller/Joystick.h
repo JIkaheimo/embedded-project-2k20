@@ -16,36 +16,72 @@ class Joystick
  * - 3.3V   = tilted down
  */
 {
-
     public:
-        struct Tilt {
-            float horizontal;
-            float vertical;
+        /*
+         * Struct for organizing joystick position.
+         */
+        struct Tilt 
+        {
+            float horizontal = 0.0f;
+            float vertical = 0.0f;
         };
 
-        Joystick(PinName = A0, PinName = A1, PinName = D8);
 
+        /*
+         * Joystick default constructor
+         */
+        Joystick(PinName horizontalPin = A0, PinName verticalPin = A1, PinName buttonPin = D8);
+
+
+        /*
+         * pollInput() reads Joystick sensor values and updates
+         * any input value dependent state variables.
+         *
+         * Use isTilted(), isPressed(), isReleased() to check the state of the
+         * component and use readTilt() to access the position of joystick.
+         */
         void pollInput();
 
-        bool isPressed();
-        bool isTilted();
+        
+        /*
+         * isPressed() returns true if button has been pressed between
+         * two consecutive pollInput() calls
+         */
+        const bool isPressed() const;
 
+
+        /*
+         * isReleased() returns true if button has been released between
+         * two consecutive pollInput() calls
+         */
+        const bool isReleased() const;
+
+
+        /*
+         * isTilted() returns true if joystick is being tilted.
+         * (not in rest)
+         */
+        const bool isTilted() const;
+
+
+        /*
+         * readTilt() returns the orientation of joystick.
+         * Use in combination with isTilted() to get better results.
+         */
         Tilt readTilt();
-        bool readPressed();
 
     private:
+        // Pins
         AnalogIn _vertical;
         AnalogIn _horizontal;
         DigitalIn _button;
 
+        // Calibration
         float _verticalCalib;
         float _horizontalCalib;
 
-        bool _isPressed;
         bool _pressed;
         bool _lastPressed;
 
-        float _verticalData;
-        float _horizontalData;
         Tilt _tilt;
 };
