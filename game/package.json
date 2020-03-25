@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "env NODE_ENV=dev parcel src/server/server",
-    "build:release": "env NODE_ENV=prod parcel build src/server/server",
-    "start": "env NODE_ENV=dev node ./src/server/server.js"
+    "start:dev": "env NODE_ENV=dev parcel server/server",
+    "build:release": "env NODE_ENV=prod parcel build server/server",
+    "start": "env NODE_ENV=dev node server/server"
   },
   "keywords": [],
   "author": "",
