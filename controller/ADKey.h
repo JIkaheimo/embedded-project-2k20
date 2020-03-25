@@ -2,7 +2,7 @@
 #include "string"
 
 class ADKey 
-/**
+/*
  *  ADKEY
  * 
  * Component layout:
@@ -14,7 +14,7 @@ class ADKey
  */
 {
     public:
-        /**
+        /*
          * Keys of ADKey component
          */
         enum Key  
@@ -28,11 +28,8 @@ class ADKey
         };
 
 
-        /**
+        /*
          * ADKey default constructor
-         * 
-         * Params:
-         * keyPin - Analog pin in which ADKey component is connected.
          */
         ADKey(const PinName keyPin = A2);
 
@@ -41,35 +38,46 @@ class ADKey
          * pollInput() reads the ADKey sensor value and updates
          * any input value dependent state variables. 
          *
-         * Use isPressed() and readKey() to check and access
-         * any newly pressed keys.
+         * Use isPressed(), isReleased() to check the state of the
+         * component and use readPressed(), readReleased() to get
+         * the corresponding buttons.
          */
         void pollInput();
 
 
         /*
-         * isPressed returns true if button has been pressed
-         * since the last time of reading the key.
+         * isPressed() returns true if button has been pressed between
+         * two consecutive pollInput() calls
          */
         const bool isPressed() const;
 
 
-        /**
-         * readKey is used to get the pressed key of ADKey component.
-         * Also clears the pressed key and re-initializes the component for reading.
+        /*
+         * isReleased() returns true if button has been released between
+         * two consecutive pollInput() calls
          */
-        const ADKey::Key readKey();
+        const bool isReleased() const;
         
+
+        /*
+         * readPressed() returns the pressed key from ADKey component.
+         * Use in combination with isPressed() to get better results.
+         */
+        const Key readPressed();
+        
+
+        /* 
+         * readReleased() returns the released key from ADKey component.
+         * Use in combination with isReleased() to get better results.
+         */
+        const Key readReleased();
 
     private:
+        // Pins
         AnalogIn _pin;
-        Timer _timer;
 
-        ADKey::Key _pressedKey = ADKey::Key::None;
-        ADKey::Key _lastKey = ADKey::Key::None;
+        Key _pressedKey = Key::None;
+        Key _lastKey = Key::None;
         
-        int _inputTime = 0;
-        
-        ADKey::Key inputToKey(const uint16_t) const;
-
+        Key inputToKey(const uint16_t) const;
 };

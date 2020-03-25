@@ -45,7 +45,6 @@ class ControllerWindow(tk.Frame):
 
         self.__canvas.pack()
         self.pack()
-        
 
         self.update_analog(0, 0)
     # __init__ end
@@ -87,9 +86,10 @@ class ControllerWindow(tk.Frame):
         # Set button as "pressed" (update fill color)
         self.__update_fill(pressed, self.COLOR_ACTIVE)
 
-        # Update button to default state after 100ms
-        self.after(100, lambda: self.__update_fill(
-            pressed, self.COLOR_INACTIVE))
+    def release_key(self, key):
+        released = self.__buttons.get(key)
+
+        self.__update_fill(released, self.COLOR_INACTIVE)
 
     # press_key end
 

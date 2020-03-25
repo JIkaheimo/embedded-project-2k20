@@ -19,25 +19,26 @@ controllerWindow = ControllerWindow()
 # Input event handlers
 
 
-def joystickButtonHandler(_):
-    controllerWindow.press_key("J")
-
-
-def joystickTiltHandler(tilt):
-    x_tilt, y_tilt = [float(num) for num in tilt]
+def joystickTiltHandler(x_tilt, y_tilt):
+    x_tilt = float(x_tilt)
+    y_tilt = float(y_tilt)
     controllerWindow.update_analog(x_tilt, y_tilt)
 
 
-def adkeyHandler(key):
+def transmitPress(key):
     controllerWindow.press_key(*key)
 
 
+def transmitRelease(key):
+    controllerWindow.release_key(*key)
+
+
 eventMapper = {
-    "Joystick:Button":  joystickButtonHandler,
-    "Joystick:Tilt":    joystickTiltHandler,
-    "ADKey:Button":     adkeyHandler
-
-
+    "Joystick:ButtonPress":     partial(transmitPress, "J"),
+    "Joystick:ButtonRelease":   partial(transmitRelease, "J"),
+    "Joystick:Tilt":            joystickTiltHandler,
+    "ADKey:ButtonPress":        transmitPress,
+    "ADKey:ButtonRelease":      transmitRelease
 }
 
 
@@ -89,8 +90,8 @@ def read_serial(port):
 
         event = input[0]
         params = input[1:len(input)]
-
-        eventMapper.get(event)(params)
+        print(event)
+        eventMapper.get(event)(*params)
 
 
 if __name__ == '__main__':
