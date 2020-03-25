@@ -1,61 +1,68 @@
 import tkinter as tk
-
-COLORS.INACTIVE = "#BBB"
+from enum import Enum
 
 
 class ControllerWindow(tk.Frame):
 
+    WIDTH = 400
+    HEIGHT = 210
+
+    JOY_BASE_X = 100
+    JOY_BASE_Y = 100
+    JOY_BASE_RADIUS = 40
+
+    JOY_RADIUS = 10
+
+    KEYS_BASE_X = 200
+    KEYS_BASE_Y = 50
+
+    COLOR_INACTIVE = "#bbbbbb"
+    COLOR_ACTIVE = "#8c5259"
+
     def __init__(self, master=None):
         super().__init__(master=master)
 
-        # INITIALIZE APP CONFIGS
-
-        self.__COLORS = {}
-        self.__COLORS["INACTIVE"] = "#BBB"
-        self.__COLORS["ACTIVE"] = "#8c5259"
-
-        self.__ANALOG_BASE_X = 100
-        self.__ANALOG_BASE_Y = 100
-        self.__ANALOG_BASE_RADIUS = 40
-
-        self.__ANALOG_STICK_RADIUS = 10
-
         # INITIALIZE CANVAS
+        self.__canvas = tk.Canvas(
+            self, width=self.WIDTH, height=self.HEIGHT)
 
-        self.__canvas = tk.Canvas(self, width=600, height=400)
-
-        self.__create_circle(self.__ANALOG_BASE_X,
-                             self.__ANALOG_BASE_Y, self.__ANALOG_BASE_RADIUS)
+        self.__create_circle(self.JOY_BASE_X,
+                             self.JOY_BASE_Y, self.JOY_BASE_RADIUS)
 
         self.__analog_stick = self.__create_circle(
-            0, 0, self.__ANALOG_STICK_RADIUS)
+            0, 0, self.JOY_RADIUS)
 
         self.__label = tk.Label(self)
         self.__label["text"] = "asd"
         self.__label.pack()
 
         # Create button rectangles.
-        self.__buttons = self.__create_keys(400, 10)
+        self.__buttons = self.__create_keys(
+            self.KEYS_BASE_X, self.KEYS_BASE_Y)
+
+        # Add analog stick as button.
         self.__buttons["J"] = self.__analog_stick
 
         self.__canvas.pack()
+        self.pack()
+        
 
         self.update_analog(0, 0)
-
-        self.pack()
     # __init__ end
+
+    def __conf(self, setting):
+        return self.__config[setting].value
 
     def update_analog(self, x, y):
 
         # Get analog circle center coordinate.
-        analog_x = self.__ANALOG_BASE_X + x * self.__ANALOG_BASE_RADIUS
-
-        analog_y = self.__ANALOG_BASE_Y + y * self.__ANALOG_BASE_RADIUS
+        analog_x = self.JOY_BASE_X + x * self.JOY_BASE_RADIUS
+        analog_y = self.JOY_BASE_X + y * self.JOY_BASE_RADIUS
 
         self.__label["text"] = "X: {}, Y: {}".format(x, y)
 
-        self.__canvas.coords(self.__analog_stick, analog_x - self.__ANALOG_STICK_RADIUS, analog_y -
-                             self.__ANALOG_STICK_RADIUS, analog_x + self.__ANALOG_STICK_RADIUS, analog_y + self.__ANALOG_STICK_RADIUS)
+        self.__canvas.coords(self.__analog_stick, analog_x - self.JOY_RADIUS, analog_y -
+                             self.JOY_RADIUS, analog_x + self.JOY_RADIUS, analog_y + self.JOY_RADIUS)
 
         """
   self.after(100, self.update_analog,
@@ -78,11 +85,11 @@ class ControllerWindow(tk.Frame):
         pressed = self.__buttons.get(key)
 
         # Set button as "pressed" (update fill color)
-        self.__update_fill(pressed, self.__COLORS.get("ACTIVE"))
+        self.__update_fill(pressed, self.COLOR_ACTIVE)
 
         # Update button to default state after 100ms
         self.after(100, lambda: self.__update_fill(
-            pressed, self.__COLORS.get("INACTIVE")))
+            pressed, self.COLOR_INACTIVE))
 
     # press_key end
 
@@ -99,7 +106,7 @@ class ControllerWindow(tk.Frame):
 
             # Create button rectangle.
             keys[keycode] = self.__create_rectangle(
-                key_x, key_y, fill=self.__COLORS.get("INACTIVE"))
+                key_x, key_y, fill=self.COLOR_INACTIVE)
 
             # Create button text.
             self.__canvas.create_text(key_x + 20, key_y + 20, text=keycode)
