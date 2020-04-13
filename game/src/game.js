@@ -1,109 +1,111 @@
-var config = {
-    type: Phaser.AUTO,
-    width: 1150,
-    height: 300,
-    physics: {
-      default: 'arcade',
-      arcade: {
-        gravity: { y: 600},
-        debug: false
-      }
+import Phaser from 'phaser';
+
+// Fix to Matter + Phaser collision detection
+// https://github.com/photonstorm/phaser/commit/d56a6c879056c09a1ec1e8e7b229ac60179acdce
+
+import backgroundImage from './backgrounds.png';
+import mapImage from './map.json';
+import tilesetImage from './spritesheet-extruded.png';
+import character from './characters/Zombie/Tilesheet/character_zombie_sheetHD.png';
+import characterXML from './characters/Zombie/Tilesheet/character_zombie_sheetHD.xml';
+import Player from './Player';
+
+const BASE_LAYER = 'Base';
+const LADDER_LAYER = 'Ladders';
+
+const physics = {
+  default: 'matter',
+  matter: {
+    gravity: {
+      y: 1,
     },
-    scene: {
-      preload: preload,
-      create: create,
-      update: update
-    }
-  };
+    enableSleep: true,
+    debug: true,
+  },
+};
 
-  var player;
-  var platforms;
-  var cursors;
+const config = {
+  type: Phaser.AUTO,
+  width: window.innerWidth,
+  height: window.innerHeight,
+  pixelArt: true,
+  physics,
+  scene: {
+    preload,
+    create,
+    update,
+  },
+  fps: {
+    target: 60,
+    forceSetTimeOut: true,
+  },
+};
 
-  var game = new Phaser.Game(config);
+const game = new Phaser.Game(config);
 
-  function preload()
-  {
-    this.load.image('background', '../public/assets/backgrounds.png');
-    this.load.spritesheet('dude', '../public/assets/spritesheet.png', { frameWidth: 23, frameHeight: 23 });
-  }
+function preload() {
+  /** PRELOAD GRAPHICS **/
 
-  function create()
-  {
-    this.add.image(0, 0, 'background').setScale(5).setOrigin(0, 0);
+  // Load background images.
+  this.load.image('backgrounds', backgroundImage);
+  // Load platformer tileset.
+  this.load.image('platformer-tiles', tilesetImage);
+  // Load map.
+  this.load.tilemapTiledJSON('map', mapImage);
+  // Load player sprites.
+  this.load.atlasXML('player', character, characterXML);
+}
 
-    platforms = this.physics.add.staticGroup();
-    platforms.create(100, 280, null).setScale(5).refreshBody();
+function create() {
+  // Add background image.
+  this.add.image(0, 0, 'backgrounds').setScale(15).setOrigin(0, 0);
 
-    player = this.physics.add.sprite(100, 150, 'dude').setScale(2);
-    player.setCollideWorldBounds(true);
+  // Create map.
+  const map = this.make.tilemap({ key: 'map' });
 
-    this.anims.create({
-        key: 'left',
-        frames: this.anims.generateFrameNumbers('dude', { start: 28, end: 29 }),
-        frameRate: 10,
-        repeat: -1,
-    });
+  // Add extruded tileset image.
+  const tileset = map.addTilesetImage(
+    'spritesheet',
+    'platformer-tiles',
+    23,
+    23,
+    1,
+    2,
+  );
 
-    this.anims.create({
-        key: 'turn',
-        frames: [ { key: 'dude', frame: 19 } ],
-        frameRate: 10
-    });
+  // Get layers from map.
+  const baseLayer = map.createStaticLayer(BASE_LAYER, tileset, 0, 0);
+  const ladderLayer = map.createStaticLayer(LADDER_LAYER, tileset, 0, 0);
 
-    this.anims.create({
-        key: 'right',
-        frames: this.anims.generateFrameNumbers('dude', { start: 28, end: 29 }),
-        frameRate: 10,
-        repeat: -1,
-    });
+  // Set colliding tiles before converting the layers to Matter bodies.
+  baseLayer.setCollisionByProperty({ collides: true });
 
-    this.anims.create({
-        key: 'jump',
-        frames: [ { key: 'dude', frame: 21 } ],
-        frameRate: 10
-    });
+  // Get the layers registered with Matter. Any colliding tiles will be given a Matter body.
+  // The collision shapes haven't been mapped in Tiled so each colliding tile will get
+  // a default rectangle body.
+  this.matter.world.convertTilemapLayer(baseLayer);
 
-    cursors = this.input.keyboard.createCursorKeys();
+  // Randomize player spawn.
+  const spawns = map.getObjectLayer('Objects')['objects'];
+  const spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
-    this.physics.add.collider(player, platforms);
-  }
+  this.player = new Player(this, spawn.x, spawn.y);
 
-  function update()
-  {
-    if (cursors.left.isDown) {
-        player.setVelocityX(-160);
+  // Setup arrow keys to controlthe game.
+  this.controls = this.input.keyboard.createCursorKeys();
 
-        if (player.body.touching.down) {
-          player.anims.play('left', true);
-        }
-        else {
-          player.anims.play('jump');
-        }
-        player.setFlipX(true);
-    }
-    else if (cursors.right.isDown) {
-        player.setVelocityX(160);
+  /** CAMERA **/
 
-        if (player.body.touching.down) {
-          player.anims.play('right', true);
-        }
-        else {
-          player.anims.play('jump');
-        }
-        player.setFlipX(false);
-    }
-    else if (player.body.touching.down) {
-        player.setVelocityX(0);
+  // Setup camera to follow player.
+  const playerCamera = this.cameras.main;
 
-        player.anims.play('turn');
-    }
-    else {
-      player.setVelocityX(0);
-    }
+  playerCamera.startFollow(this.player.sprite, false, 0.5, 0.5);
+  playerCamera.setZoom(1.5);
+  playerCamera.roundPixels = true;
 
-    if (cursors.up.isDown && player.body.touching.down)
-    {
-        player.setVelocityY(-330);
-    }
-  }
+  // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap.
+  playerCamera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+  //this.matter.world.createDebugGraphic();
+}
+
+function update(time, delta) {}
