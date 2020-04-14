@@ -1,8 +1,11 @@
 import backgroundImage from '../backgrounds.png';
+
 import mapImage from '../map.json';
 import tilesetImage from '../arcade_platformerV2-transparent.png';
+
 import character from '../characters/Zombie/Tilesheet/character_zombie_sheetHD.png';
 import characterXML from '../characters/Zombie/Tilesheet/character_zombie_sheetHD.xml';
+
 import Player from '../Player';
 
 const BACKGROUND_LAYER = 'background';
