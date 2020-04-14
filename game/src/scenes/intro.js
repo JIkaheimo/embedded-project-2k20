@@ -1,8 +1,8 @@
-import background from '../sprites/background.png';
-import welcome from '../sprites/welcome.png';
-import gametitle from '../sprites/start.png';
-import startbutton from '../sprites/startbutton.png';
-import intro_music from '../audio/01-opening.ogg';
+import background from '../assets/sprites/background.png';
+import welcome from '../assets/sprites/welcome.png';
+import gametitle from '../assets/sprites/start.png';
+import startbutton from '../assets/sprites/startbutton.png';
+import intro_music from '../assets/audio/01-opening.ogg';
 
 function preload() {
   this.load.audio('intro_music', intro_music);

@@ -1,5 +1,5 @@
 import mapImage from '../assets/map/map.json';
-import tilesetImage from '../assets/map/arcade_platformerV2-transparent.png';
+import tilesetImage from '../assets/map/platformer-extruded.png';
 
 import character from '../assets/characters/character.robot.png';
 import characterXML from '../assets/characters/character.robot.xml';
@@ -29,6 +29,10 @@ function create() {
   const tileset = map.addTilesetImage(
     'arcade_platformerV2-transparent',
     'platformer-tiles',
+    16,
+    16,
+    1,
+    2,
   );
 
   // Get layers from map.

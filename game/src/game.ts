@@ -6,23 +6,22 @@ import introScene from './scenes/intro';
 // Fix to Matter + Phaser collision detection
 // https://github.com/photonstorm/phaser/commit/d56a6c879056c09a1ec1e8e7b229ac60179acdce
 
-const physics = {
+// Physics configurations.
+const physics: Phaser.Types.Core.PhysicsConfig = {
   default: 'matter',
   matter: {
     gravity: {
-      y: 1,
+      y: 1, // default matter gravity.
     },
-    enableSleep: true,
-    debug: true,
-    wireframes: false,
+    debug: false,
   },
 };
 
-const config = {
+// Game world configurations.
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
-  pixelArt: true,
   physics,
   fps: {
     target: 60,
