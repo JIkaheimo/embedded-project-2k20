@@ -3,6 +3,10 @@ import serial.tools.list_ports
 import socketio
 import tkinter as tk
 
+from pynput.keyboard import Key, Controller
+from pynput import mouse
+
+
 from gui import ControllerWindow
 
 import sys
@@ -16,12 +20,29 @@ lock = threading.Lock()
 
 controllerWindow = ControllerWindow()
 
+sio = socketio.Client()
+sio.connect('http://localhost:5000')
+print('my sid is', sio.sid)
+
+keyboard = Controller()
+mouseInput = mouse.Controller()
 # Input event handlers
 
 
 def joystickTiltHandler(x_tilt, y_tilt):
     x_tilt = float(x_tilt)
     y_tilt = float(y_tilt)
+
+    if x_tilt > 0.05:
+        keyboard.press(Key.left)
+        keyboard.release(Key.right)
+    elif x_tilt < -0.05:
+        keyboard.press(Key.right)
+        keyboard.release(Key.left)
+    else:
+        keyboard.release(Key.left)
+        keyboard.release(Key.right)
+
     controllerWindow.update_analog(x_tilt, y_tilt)
 
 
@@ -90,7 +111,6 @@ def read_serial(port):
 
         event = input[0]
         params = input[1:len(input)]
-        print(event)
         eventMapper.get(event)(*params)
 
 
@@ -108,7 +128,7 @@ if __name__ == '__main__':
         print("Could not detect connected Nucleo. Please make sure it is correctly connected...")
         sys.exit()
 
-    # Create two threads as follows
+    # Create different thread to read serial input.
     try:
         serialThread = threading.Thread(
             target=read_serial, args=(nucleoPort, ))

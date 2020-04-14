@@ -136,11 +136,10 @@ void handleJoystick()
             device.printf("Joystick:ButtonRelease\n");
         }
         
-        if (joystick.isTilted()) 
-        {
-            Joystick::Tilt tilt = joystick.readTilt();
-            device.printf("Joystick:Tilt %.2f %.2f\n", tilt.horizontal, tilt.vertical);
-        }
+
+        Joystick::Tilt tilt = joystick.readTilt();
+        device.printf("Joystick:Tilt %.2f %.2f\n", tilt.horizontal, tilt.vertical);
+
 
         joystickTimer.reset();
     }

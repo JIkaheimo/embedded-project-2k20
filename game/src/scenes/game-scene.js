@@ -1,12 +1,10 @@
-import backgroundImage from '../backgrounds.png';
+import mapImage from '../assets/map/map.json';
+import tilesetImage from '../assets/map/arcade_platformerV2-transparent.png';
 
-import mapImage from '../map.json';
-import tilesetImage from '../arcade_platformerV2-transparent.png';
+import character from '../assets/characters/character.robot.png';
+import characterXML from '../assets/characters/character.robot.xml';
 
-import character from '../characters/Zombie/Tilesheet/character_zombie_sheetHD.png';
-import characterXML from '../characters/Zombie/Tilesheet/character_zombie_sheetHD.xml';
-
-import Player from '../Player';
+import Player from '../entities/Player';
 
 const BACKGROUND_LAYER = 'background';
 const BASE_LAYER = 'terrain';
@@ -15,8 +13,6 @@ const GRASS_LAYER = 'grass';
 function preload() {
   /** PRELOAD GRAPHICS **/
 
-  // Load background images.
-  this.load.image('backgrounds', backgroundImage);
   // Load platformer tileset.
   this.load.image('platformer-tiles', tilesetImage);
   // Load map.
@@ -26,11 +22,6 @@ function preload() {
 }
 
 function create() {
-  this.key = 'game';
-
-  // Add background image.
-  this.add.image(0, 0, 'backgrounds').setScale(15).setOrigin(0, 0);
-
   // Create map.
   const map = this.make.tilemap({ key: 'map' });
 

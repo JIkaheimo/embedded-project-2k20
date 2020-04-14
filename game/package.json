@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "env NODE_ENV=dev parcel server/server",
-    "build:release": "env NODE_ENV=prod parcel build server/server",
-    "start": "env NODE_ENV=dev node server/server"
+    "dev-server": "nodemon server/server",
+    "dev-game": "parcel watch src/index.html --out-dir server/public"
   },
   "keywords": [],
   "author": "",
