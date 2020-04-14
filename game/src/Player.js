@@ -33,6 +33,12 @@ export default class Player {
       frameRate: 10,
     });
 
+    scene.anims.create({
+      key: 'fall',
+      frames: [{ key: 'player', frame: 'fall' }],
+      frameRate: 10,
+    });
+
     // Create physics-based sprite that we will be moved around and animated.
     this.sprite = scene.matter.add.sprite(0, 0, 'player', 0);
 
@@ -57,7 +63,6 @@ export default class Player {
         isSensor: true,
       }),
     };
-    
 
     // Combine body and sensors.
     const compoundBody = Body.create({
@@ -75,7 +80,7 @@ export default class Player {
     // Initialize body props.
     this.sprite
       .setExistingBody(compoundBody)
-      .setScale(0.3)
+      .setScale(0.15)
       .setFixedRotation()
       .setPosition(x, y);
 
@@ -87,16 +92,18 @@ export default class Player {
     const { sprite } = this;
     const { controls } = this.scene;
 
+    const moveForce = 0.003;
+
     // Horizontal movement.
     if (controls.left.isDown) {
       // Movement left.
       if (controls.shift.isDown) {
         // Run
-        sprite.setVelocityX(-10);
+        sprite.applyForce({ x: -moveForce, y: 0 });
         sprite.play('run', true);
       } else {
         // Walk
-        sprite.setVelocityX(-5);
+        sprite.applyForce({ x: -moveForce, y: 0 });
         sprite.play('walk', true);
       }
       sprite.setFlipX(true);

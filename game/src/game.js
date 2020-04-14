@@ -5,13 +5,14 @@ import Phaser from 'phaser';
 
 import backgroundImage from './backgrounds.png';
 import mapImage from './map.json';
-import tilesetImage from './spritesheet-extruded.png';
+import tilesetImage from './arcade_platformerV2-transparent.png';
 import character from './characters/Zombie/Tilesheet/character_zombie_sheetHD.png';
 import characterXML from './characters/Zombie/Tilesheet/character_zombie_sheetHD.xml';
 import Player from './Player';
 
-const BASE_LAYER = 'Base';
-const LADDER_LAYER = 'Ladders';
+const BACKGROUND_LAYER = 'background';
+const BASE_LAYER = 'terrain';
+const GRASS_LAYER = 'grass';
 
 const physics = {
   default: 'matter',
@@ -21,6 +22,7 @@ const physics = {
     },
     enableSleep: true,
     debug: true,
+    wireframes: false,
   },
 };
 
@@ -65,17 +67,23 @@ function create() {
 
   // Add extruded tileset image.
   const tileset = map.addTilesetImage(
-    'spritesheet',
+    'arcade_platformerV2-transparent',
     'platformer-tiles',
-    23,
-    23,
-    1,
-    2,
   );
 
   // Get layers from map.
+  const backgroundLayer = map.createStaticLayer(
+    BACKGROUND_LAYER,
+    tileset,
+    0,
+    0,
+  );
+
   const baseLayer = map.createStaticLayer(BASE_LAYER, tileset, 0, 0);
-  const ladderLayer = map.createStaticLayer(LADDER_LAYER, tileset, 0, 0);
+
+  const grassLayer = map.createStaticLayer(GRASS_LAYER, tileset, 0, 0);
+  grassLayer.setDepth(3);
+  //const ladderLayer = map.createStaticLayer(LADDER_LAYER, tileset, 0, 0);
 
   // Set colliding tiles before converting the layers to Matter bodies.
   baseLayer.setCollisionByProperty({ collides: true });
@@ -85,8 +93,10 @@ function create() {
   // a default rectangle body.
   this.matter.world.convertTilemapLayer(baseLayer);
 
+  console.log(this.matter.world.localWorld.bodies);
+
   // Randomize player spawn.
-  const spawns = map.getObjectLayer('Objects')['objects'];
+  const spawns = map.getObjectLayer('spawns')['objects'];
   const spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
   this.player = new Player(this, spawn.x, spawn.y);
@@ -100,7 +110,7 @@ function create() {
   const playerCamera = this.cameras.main;
 
   playerCamera.startFollow(this.player.sprite, false, 0.5, 0.5);
-  playerCamera.setZoom(1.5);
+  playerCamera.setZoom(3);
   playerCamera.roundPixels = true;
 
   // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap.
