@@ -6,6 +6,8 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
+const PORT = process.env.PORT || 5000;
+
 let players = [];
 
 // Enable cors.
@@ -28,8 +30,8 @@ io.on('connection', (socket) => {
     },
     velocity: {
       x: 0,
-      y: 0
-    }
+      y: 0,
+    },
   };
 
   console.log('a user connected');
@@ -41,7 +43,7 @@ io.on('connection', (socket) => {
   socket.on('new player', (position, velocity) => {
     console.log('Player connected');
     // Create new player object.
-    player = { ...player, position, velocity};
+    player = { ...player, position, velocity };
     // Send other players to the client.
     socket.emit('init players', players);
     // Add player to server-tracked players.
@@ -66,6 +68,6 @@ io.on('connection', (socket) => {
   });
 });
 
-http.listen(5000, () => {
-  console.log('Listening on port 5000.');
+http.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}.`);
 });

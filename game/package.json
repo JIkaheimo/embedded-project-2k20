@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server/server",
     "dev-server": "nodemon server/server",
     "dev-game": "parcel watch src/index.html --out-dir server/public"
   },
