@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "prestart": "cd ./game/server && npm install",
     "start": "node ./game/server/server.js"
   }
 }
