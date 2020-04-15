@@ -265,10 +265,15 @@ export default class Player {
 
       sprite.setVelocityX(this.velocity);
 
-      if (up.isDown) {
+      if (up.isDown && this.canJump) {
         // Jump
         sprite.setVelocityY(-6.5);
+        this.canJump = false;
         sprite.play('jump', false);
+        this.jumpTimer = this.scene.time.addEvent({
+          delay: 500,
+          callback: () => (this.canJump = true),
+        });
       }
     }
 
