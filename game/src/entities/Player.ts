@@ -38,13 +38,13 @@ interface PlayerSensors {
 
 export default class Player {
   private sensors: PlayerSensors;
-  private sprite: Phaser.Physics.Matter.Sprite;
+  public sprite: Phaser.Physics.Matter.Sprite;
   private acceleration: number = DEFAULT_ACC;
   private velocity: number = 0;
   private canJump: boolean = true;
   private jumpTimer = null;
 
-  constructor(private scene: Phaser.Scene, x, y) {
+  constructor(private scene: Phaser.Scene, x, y, private isControlled = true) {
     // Create player animations.
     scene.anims.create({
       key: 'idle',
@@ -160,6 +160,8 @@ export default class Player {
 
   update(time, deltaTime) {
     // "Shortened" way to get required state from object...
+    if (!this.isControlled) return;
+
     const {
       sprite,
       scene: {

@@ -6,6 +6,9 @@ import characterXML from '../assets/characters/character.robot.xml';
 
 import Player from '../entities/Player';
 
+import io from 'socket.io-client';
+import { ScaleModes } from 'phaser';
+
 const BACKGROUND_LAYER = 'background';
 const BASE_LAYER = 'terrain';
 const GRASS_LAYER = 'grass';
@@ -24,6 +27,8 @@ function preload() {
 function create() {
   // Create map.
   const map = this.make.tilemap({ key: 'map' });
+
+  this.serverSocket = io();
 
   // Add extruded tileset image.
   const tileset = map.addTilesetImage(
@@ -59,6 +64,8 @@ function create() {
 
   console.log(this.matter.world.localWorld.bodies);
 
+  this.otherPlayers = {};
+
   // Randomize player spawn.
   const spawns = map.getObjectLayer('spawns')['objects'];
   const spawn = spawns[Math.floor(Math.random() * spawns.length)];
@@ -80,9 +87,56 @@ function create() {
   // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap.
   playerCamera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   //this.matter.world.createDebugGraphic();
+
+  this.time.addEvent({
+    delay: 50,
+    callback: sendPlayerData,
+    callbackScope: this,
+    loop: true,
+  });
+
+  const scene = this;
+
+  this.serverSocket.on('new player', function ({ id, position: { x, y } }) {
+    // Add player model.
+    console.log(x, y);
+    scene.otherPlayers[id] = new Player(scene, x, y, false);
+  });
+
+  this.serverSocket.on('init players', function (players) {
+    for (let player of players) {
+      console.log(player);
+      scene.otherPlayers[player.id] = new Player(
+        scene,
+        player.position.x,
+        player.position.y,
+        false,
+      );
+    }
+  });
+
+  this.serverSocket.on('remove player', function (id) {
+    // Remove player model.
+    scene.otherPlayers[id].sprite.destroy();
+    delete scene.otherPlayers[id];
+  });
+
+  this.serverSocket.on('player update', function ({ id, position, velocity }) {
+    if (scene.otherPlayers[id]) {
+      scene.otherPlayers[id].sprite.setPosition(position.x, position.y);
+      scene.otherPlayers[id].sprite.setVelocity(velocity.x, velocity.y);
+    }
+  });
+
+  this.serverSocket.emit('new player', this.player.sprite.body.position);
 }
 
 function update(time, delta) {}
+
+function sendPlayerData() {
+  const { position, velocity } = this.player.sprite.body;
+  this.serverSocket.emit('player update', position, velocity);
+}
 
 export default {
   preload,
