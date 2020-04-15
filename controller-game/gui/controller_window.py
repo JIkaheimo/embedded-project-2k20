@@ -123,3 +123,5 @@ class ControllerWindow(tk.Frame):
     def __update_fill(self, component, fill):
         self.__canvas.itemconfig(component, fill=fill)
     # __update_fill end
+
+

@@ -3,36 +3,34 @@ import serial.tools.list_ports
 import socketio
 import tkinter as tk
 
+from gui import ControllerWindow
+from functools import partial
+
 from pynput.keyboard import Key, Controller
 from pynput import mouse
 
-
-from gui import ControllerWindow
-
 import sys
-
 import threading
+from time import sleep
 
-from functools import partial
-
-
-lock = threading.Lock()
-
-controllerWindow = ControllerWindow()
+root = tk.Tk()
+controllerWindow = ControllerWindow(root)
 
 sio = socketio.Client()
-sio.connect('http://localhost:5000')
-print('my sid is', sio.sid)
 
 keyboard = Controller()
 mouseInput = mouse.Controller()
-# Input event handlers
 
 
 def joystickTiltHandler(x_tilt, y_tilt):
+    ####################################
+    # Handles joystick tilt events.
+    ####################################
+
     x_tilt = float(x_tilt)
     y_tilt = float(y_tilt)
 
+    # Map tilt to arrow key press.
     if x_tilt > 0.05:
         keyboard.press(Key.left)
         keyboard.release(Key.right)
@@ -43,14 +41,25 @@ def joystickTiltHandler(x_tilt, y_tilt):
         keyboard.release(Key.left)
         keyboard.release(Key.right)
 
+    # Update window to display analog tilt.
     controllerWindow.update_analog(x_tilt, y_tilt)
 
 
 def transmitPress(key):
+    ##################################
+    # Handles button press events.
+    #################################
+
+    # Update window to display button press.
     controllerWindow.press_key(*key)
 
 
 def transmitRelease(key):
+    ###################################
+    # Handles button release events
+    ##################################
+
+    # Update window to display button release.
     controllerWindow.release_key(*key)
 
 
@@ -87,31 +96,56 @@ def initSerial(port):
 # initSerial end
 
 
-def read_serial(port):
+class SerialThread(threading.Thread):
+    #########################################################################
+    # SerialThread handles the serial communication with Nucleo devices and
+    # maps the read data to event handlers (if it can be mapped)...
+    #########################################################################
 
-    device = initSerial(port)
+    # Set this variable to kill the thread.
+    __isRunning = False
+    # State props.
+    isDeviceOpen = False
 
-    buffer = []
+    __device = None
 
-    device.open()
+    def start(self, serialDevice):
+        # Try to open a connection to serial device.
+        self.__device = serialDevice
+        self.__device.open()
+        self.daemon = True
+        self.isDeviceOpen = self.__device.isOpen()
+        return super().start()
 
-    if not device.isOpen():
-        print("Error connecting to serial port {}.".format(port))
-        exit()
+    def run(self):
+        if not self.isDeviceOpen:
+            raise Exception(
+                "Could not establish a serial connection with the given device...")
 
-    while True:
-        inputFromDevice = device.readline().decode('utf-8').rstrip()
+        self.__isRunning = True
 
-        # Filter out empty events.
-        if len(inputFromDevice) == 0:
-            continue
+        while self.__isRunning:
+            # Parse serial data from the device.
+            inputFromDevice = self.__device.readline().decode('utf-8').rstrip()
 
-        # Parse input
-        input = inputFromDevice.split(" ")
+            # Filter out empty events.
+            if len(inputFromDevice) == 0:
+                continue
 
-        event = input[0]
-        params = input[1:len(input)]
-        eventMapper.get(event)(*params)
+            # Parse input = map event and params.
+            input = inputFromDevice.split(" ")
+            event = input[0]
+            params = input[1:len(input)]
+
+            # Map input to handler function.
+            try:
+                eventMapper.get(event)(*params)
+            except:
+                print("Error reading data from serial... Trying to read again.")
+
+    def kill(self):
+        self.__isRunning = False
+        self.__device.close()
 
 
 if __name__ == '__main__':
@@ -128,18 +162,31 @@ if __name__ == '__main__':
         print("Could not detect connected Nucleo. Please make sure it is correctly connected...")
         sys.exit()
 
-    # Create different thread to read serial input.
-    try:
-        serialThread = threading.Thread(
-            target=read_serial, args=(nucleoPort, ))
+    # Create separate thread for reading data from Nucleo through serial.
+    serialThread = SerialThread()
+    serialThread.start(initSerial(nucleoPort))
 
-        serialThread.daemon = True
-        serialThread.start()
-    except:
-        print("Unable to open thread for reading serial data.")
+    # Connect to the erver. TODO: Get game data from server.
+    sio.connect('https://embedded-project.herokuapp.com')
 
-    # Main loop
     try:
+        # controllerWindow blocks execution until exit or keyboard interrupt.
         controllerWindow.mainloop()
-    except KeyboardInterrupt:
-        exit()
+    except:
+        root.destroy()
+
+    # Cleanup...
+    print('Killing serial thread...')
+    serialThread.kill()
+
+    sleep(1)
+
+    print('Closing connection with server...')
+
+    sio.disconnect()
+
+    sleep(1)
+
+    print('Done!')
+
+    sys.exit()
