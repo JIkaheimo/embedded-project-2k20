@@ -1,5 +1,25 @@
 import Phaser from 'phaser';
 
+// Constants for different acceleration and velocity.
+const DEFAULT_ACC = 5;
+const SPRINT_ACC = 2 * DEFAULT_ACC;
+const WEIGHT_ACC = 4 * DEFAULT_ACC;
+
+const WALK_VELOCITY_CAP = 2.5;
+const SPRINT_VELOCITY_CAP = 1.5 * WALK_VELOCITY_CAP;
+
+enum Movement {
+  Idle,
+  Walk,
+  Sprint,
+}
+
+enum XDirection {
+  None = 0,
+  Left = -1,
+  Right = 1,
+}
+
 interface PlayerSensors {
   left;
   right;
@@ -9,9 +29,16 @@ interface PlayerSensors {
 export default class Player {
   private sensors: PlayerSensors;
   private sprite: Phaser.Physics.Matter.Sprite;
+  private acceleration: number = DEFAULT_ACC;
+  private velocity: number = 0;
 
   constructor(private scene: Phaser.Scene, x, y) {
     // Create player animations.
+    scene.anims.create({
+      key: 'idle',
+      frames: [{ key: 'player', frame: 'idle' }],
+    });
+
     scene.anims.create({
       key: 'walk',
       frames: scene.anims.generateFrameNames('player', {
@@ -95,46 +122,103 @@ export default class Player {
     this.scene.events.on('update', this.update, this);
   }
 
-  update() {
+  update(time, deltaTime) {
     const { sprite } = this;
-
     const { controls } = this.scene;
 
-    const moveForce = 0.005;
+    let moveState = Movement.Idle;
+    let xDirection = XDirection.None;
 
-    let isSprinting = 0;
+    // Convert millis to seconds.
+    deltaTime = deltaTime / 1000;
 
     /** HORIZONTAL MOVEMENT **/
 
     if (controls.left.isDown) {
-      // Movement left.
+      xDirection = XDirection.Left;
+
       if (controls.shift.isDown) {
-        isSprinting = 1;
-        sprite.play('run', true);
+        // Sprint
+        moveState = Movement.Sprint;
+        this.acceleration = -SPRINT_ACC;
       } else {
-        sprite.play('walk', true);
+        // Walk
+        moveState = Movement.Walk;
+        this.acceleration = -DEFAULT_ACC;
       }
 
-      sprite.applyForce({ x: -moveForce, y: 0 });
-      sprite.setFlipX(true);
+      // Add more boost when turning.
+      if (this.velocity > 0) {
+        this.acceleration -= WEIGHT_ACC;
+      }
+
+      // Movement left end.
     } else if (controls.right.isDown) {
-      // Movement right.
+      xDirection = XDirection.Right;
+
       if (controls.shift.isDown) {
-        isSprinting = 1;
-        sprite.play('run', true);
+        // Sprint
+        moveState = Movement.Sprint;
+        this.acceleration = SPRINT_ACC;
       } else {
-        sprite.play('walk', true);
+        // Walk
+        moveState = Movement.Walk;
+        this.acceleration = DEFAULT_ACC;
       }
 
-      sprite.applyForce({ x: +moveForce, y: 0 });
-      sprite.setFlipX(false);
+      // Add more boost when turning.
+      if (this.velocity < 0) {
+        this.acceleration += WEIGHT_ACC;
+      }
+
+      // Movement right end.
+    } else {
+      // No horizontal movement.
+
+      // Add a feel of weight when the character stops moving.
+      if (this.velocity > 0) {
+        this.acceleration = Math.max(-WEIGHT_ACC, -this.velocity / deltaTime);
+      } else if (this.velocity < 0) {
+        this.acceleration = Math.max(WEIGHT_ACC, this.velocity / deltaTime);
+      } else {
+        this.acceleration = 0;
+      }
+
+      // No horizontal movement end.
     }
 
-    // Limit horizontal speed for reasons...
-    if (sprite.body.velocity.x > 1.5 + 1.5 * isSprinting)
-      sprite.setVelocityX(1.5 + 1.5 * isSprinting);
-    else if (sprite.body.velocity.x < -1.5 - 1.5 * isSprinting)
-      sprite.setVelocityX(-1.5 - 1.5 * isSprinting);
+    // Limit horizontal speed for gameplay reasons...
+    if (moveState === Movement.Sprint) {
+      if (Math.abs(this.velocity) > SPRINT_VELOCITY_CAP) {
+        this.acceleration = 0;
+        this.velocity = SPRINT_VELOCITY_CAP * xDirection;
+      }
+    } else if (moveState === Movement.Walk) {
+      if (Math.abs(this.velocity) > WALK_VELOCITY_CAP) {
+        this.acceleration = 0;
+        this.velocity = WALK_VELOCITY_CAP * xDirection;
+      }
+    }
+
+    // Calculate new velocity.
+    this.velocity += this.acceleration * deltaTime;
+
+    // Update player entity.
+    if (moveState === Movement.Sprint) {
+      sprite.play('run', true);
+    } else if (moveState === Movement.Walk) {
+      sprite.play('walk', true);
+    }
+
+    if (this.velocity === 0) {
+      sprite.play('idle');
+    } else if (this.velocity > 0) {
+      sprite.setFlipX(false);
+    } else {
+      sprite.setFlipX(true);
+    }
+
+    sprite.setVelocityX(this.velocity);
 
     /** VERTICAL MOVEMENT **/
 
