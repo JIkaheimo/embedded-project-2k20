@@ -98,7 +98,7 @@ export default class Player {
     // Create collision sensors.
     this.sensors = {
       bottom: {
-        sensor: Bodies.rectangle(0.5 * w, h + 2, 0.65 * w, 2, {
+        sensor: Bodies.rectangle(0.5 * w, h + 2, 0.64 * w, 2, {
           isSensor: true,
         }),
         state: false,
