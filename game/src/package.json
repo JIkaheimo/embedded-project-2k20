@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "matter": "^0.2.0",
-    "phaser": "^3.22.0"
+    "phaser": "^3.22.0",
+    "phaser-matter-collision-plugin": "^0.10.2"
   },
   "devDependencies": {
     "parcel": "^1.12.4",

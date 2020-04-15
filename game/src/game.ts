@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 
+import PhaserMatterCollisionPlugin from 'phaser-matter-collision-plugin';
+
 import gameScene from './scenes/game-scene';
 import introScene from './scenes/intro';
 
@@ -26,6 +28,15 @@ const config: Phaser.Types.Core.GameConfig = {
   fps: {
     target: 60,
     forceSetTimeOut: true,
+  },
+  plugins: {
+    scene: [
+      {
+        plugin: PhaserMatterCollisionPlugin, // The plugin class
+        key: 'matterCollision', // Where to store in Scene.Systems, e.g. scene.sys.matterCollision
+        mapping: 'matterCollision', // Where to store in the Scene, e.g. scene.matterCollision
+      },
+    ],
   },
 };
 
