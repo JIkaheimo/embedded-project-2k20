@@ -157,5 +157,5 @@ class ControllerWindow(tk.Frame):
     # __update_fill end
 
     def __launch_game(self):
-        webbrowser.open('https://embedded-project.herokuapp.com/')
+        webbrowser.open('https://embedded-project.herokuapp.com/c')
     # __launch_game end

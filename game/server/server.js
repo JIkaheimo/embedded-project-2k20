@@ -45,6 +45,11 @@ io.on('connection', (socket) => {
     console.log(data);
   });
 
+  socket.on('new spectator', () => {
+    console.log('Spectator connected');
+    socket.emit('init players', players);
+  });
+
   socket.on('new player', (position, velocity) => {
     console.log('Player connected');
     // Create new player object.

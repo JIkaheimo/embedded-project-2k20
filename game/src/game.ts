@@ -2,8 +2,8 @@ import Phaser from 'phaser';
 
 import PhaserMatterCollisionPlugin from 'phaser-matter-collision-plugin';
 
-import gameScene from './scenes/game-scene';
-import introScene from './scenes/intro';
+import gameScene from './scenes/game_scene';
+import introScene from './scenes/intro_scene';
 
 // Fix to Matter + Phaser collision detection
 // https://github.com/photonstorm/phaser/commit/d56a6c879056c09a1ec1e8e7b229ac60179acdce
