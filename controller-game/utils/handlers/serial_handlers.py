@@ -1,4 +1,4 @@
-from utils import handlers
+from utils.handlers import wait_handler
 from utils import find_device
 
 
@@ -42,7 +42,7 @@ def disconnect_handler(gui, serial_reader):
         'Controller disconnected. Please plug it in or wait...', False)
 
     # Try to re-establish the connection with serial device.
-    nucleo_port = handlers.wait_handler(
+    nucleo_port = wait_handler(
         find_nucleo, 'Connection lost with Nucleo. Trying to reconnect (Press CTRL+C to exit)')
 
     print('\nSuccesfully reconnected with Nucleo.')
