@@ -1,11 +1,11 @@
 import tkinter as tk
-from enum import Enum
+import webbrowser
 
 
 class ControllerWindow(tk.Frame):
 
     WIDTH = 400
-    HEIGHT = 210
+    HEIGHT = 230
 
     JOY_BASE_X = 100
     JOY_BASE_Y = 100
@@ -16,8 +16,12 @@ class ControllerWindow(tk.Frame):
     KEYS_BASE_X = 200
     KEYS_BASE_Y = 50
 
-    COLOR_INACTIVE = "#bbbbbb"
-    COLOR_ACTIVE = "#8c5259"
+    COLOR_INACTIVE = '#bbbbbb'
+    COLOR_ACTIVE = '#8c5259'
+
+    #########################################
+    # Constructor                           #
+    #########################################
 
     def __init__(self, master=None):
         super().__init__(master=master)
@@ -32,25 +36,70 @@ class ControllerWindow(tk.Frame):
         self.__analog_stick = self.__create_circle(
             0, 0, self.JOY_RADIUS)
 
-        self.__label = tk.Label(self)
-        self.__label["text"] = "asd"
-        self.__label.pack()
+        self.__joystick_label = tk.Label(self)
+        self.__joystick_label.pack()
 
         # Create button rectangles.
         self.__buttons = self.__create_keys(
-            self.KEYS_BASE_X, self.KEYS_BASE_Y)
+            self.KEYS_BASE_X, self.KEYS_BASE_Y, ['A', 'B', 'C', 'D', 'E'], 3)
 
         # Add analog stick as button.
-        self.__buttons["J"] = self.__analog_stick
+        self.__buttons['J'] = self.__analog_stick
 
         self.__canvas.pack()
+
+        # Game launch button.
+        self.__launch_button = tk.Button(self)
+        self.__launch_button['text'] = 'Launch the game'
+        self.__launch_button['command'] = self.__launch_game
+        self.__launch_button.pack()
+
+        # Controller status label.
+        self.__status_label = tk.Label(self)
+        self.__status_label.pack()
+
         self.pack()
 
         self.update_analog(0, 0)
     # __init__ end
 
-    def __conf(self, setting):
-        return self.__config[setting].value
+    ###############################################
+    # Public methods                              #
+    ###############################################
+
+    def press_key(self, key):
+        """
+        press_key displays a key press for
+        the specific key.
+        """
+
+        # Get the key based on the given key code
+        pressed = self.__buttons.get(key)
+
+        # Set button as 'pressed' (update fill color)
+        self.__update_fill(pressed, self.COLOR_ACTIVE)
+    # press_key end
+
+    def release_key(self, key):
+        released = self.__buttons.get(key)
+
+        self.__update_fill(released, self.COLOR_INACTIVE)
+    # release_key end
+
+    def update_status(self, status_text, is_enabled=True):
+
+        # Update status text.
+        self.__status_label['text'] = status_text
+
+        # Enable/disable child components.
+        if is_enabled:
+            enable = 'normal'
+        else:
+            enable = 'disable'
+
+        for child in self.winfo_children():
+            child.configure(state=enable)
+    # update_status end
 
     def update_analog(self, x, y):
 
@@ -58,42 +107,25 @@ class ControllerWindow(tk.Frame):
         analog_x = self.JOY_BASE_X + x * self.JOY_BASE_RADIUS
         analog_y = self.JOY_BASE_X + y * self.JOY_BASE_RADIUS
 
-        self.__label["text"] = "X: {}, Y: {}".format(x, y)
+        self.__joystick_label['text'] = 'X: {}, Y: {}'.format(x, y)
 
         self.__canvas.coords(self.__analog_stick, analog_x - self.JOY_RADIUS, analog_y -
                              self.JOY_RADIUS, analog_x + self.JOY_RADIUS, analog_y + self.JOY_RADIUS)
+    # update_analog end
 
-        """
-  self.after(100, self.update_analog,
-              self._ANALOG_BASE_X, self._ANALOG_BASE_Y)
-              """
+    ############################################
+    # Private methods                          #
+    ############################################
 
-    def __create_circle(self, x, y, r, **kwargs):
-        return self.__canvas.create_oval(x - r, y - r, x + r, y + r, **kwargs)
+    def __create_circle(self, x, y, radius, **kwargs):
+        return self.__canvas.create_oval(x - radius, y - radius, x + radius, y + radius, **kwargs)
+    # __create_circle end
 
     def __create_rectangle(self, x, y, width=40, height=40, **kwargs):
         return self.__canvas.create_rectangle(x, y, x + width, y + height, **kwargs)
+    # __create_rectangle end
 
-    def press_key(self, key):
-        """
-        press_key(self, key) displays a key press for
-        the specific key.
-        """
-
-        # Get the key based on the given key code
-        pressed = self.__buttons.get(key)
-
-        # Set button as "pressed" (update fill color)
-        self.__update_fill(pressed, self.COLOR_ACTIVE)
-
-    def release_key(self, key):
-        released = self.__buttons.get(key)
-
-        self.__update_fill(released, self.COLOR_INACTIVE)
-
-    # press_key end
-
-    def __create_keys(self, start_x=400, start_y=10,  keycodes=["A", "B", "C", "D", "E"], keys_per_row=3):
+    def __create_keys(self, start_x, start_y,  keycodes, keys_per_row):
         x_index = 0
         y_index = 0
 
@@ -124,4 +156,6 @@ class ControllerWindow(tk.Frame):
         self.__canvas.itemconfig(component, fill=fill)
     # __update_fill end
 
-
+    def __launch_game(self):
+        webbrowser.open('https://embedded-project.herokuapp.com/')
+    # __launch_game end
