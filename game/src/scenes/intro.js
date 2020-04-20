@@ -42,6 +42,9 @@ function create() {
     .image(this.game.config.width / 2, 550, 'startbutton')
     .setAlpha(0)
     .setScale(2.5);
+  
+  this.spectateButton = this.add
+    .image(this.game.confogi.width)
 
   /*==========================================
 		= Animate GameObjects

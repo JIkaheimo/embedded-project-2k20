@@ -21,6 +21,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '/public/index.html'));
 });
 
+// Serve gane for controller.
+app.get('/c', (req, res) => {
+  res.sendFile(path.join(__dirname, '/public/game_for_controller.html'));
+});
+
 io.on('connection', (socket) => {
   let player = {
     id: socket.id,

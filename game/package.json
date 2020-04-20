@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server",
     "dev-server": "nodemon server/server",
-    "dev-game": "parcel watch src/index.html --out-dir server/public"
+    "dev-game": "parcel watch src/index.html --out-dir server/public",
+    "dev-controller-game": "parcel watch src/game_for_controller.html --out-dir server/public"
   },
   "keywords": [],
   "author": "",

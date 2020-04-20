@@ -22,11 +22,11 @@ const physics: Phaser.Types.Core.PhysicsConfig = {
 // Game world configurations.
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: Math.min(1024, window.innerWidth),
-  height: Math.min(768, window.innerHeight),
+  width: window.innerWidth,
+  height: window.innerHeight,
   physics,
   fps: {
-    target: 30,
+    target: 60,
     forceSetTimeOut: true,
   },
   plugins: {
