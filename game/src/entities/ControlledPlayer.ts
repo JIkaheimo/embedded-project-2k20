@@ -6,12 +6,12 @@ import Player, { XDirection, Movement } from './Player';
 import { Vector } from 'matter';
 
 // Constants for different accelerations and velocities.
-const DEFAULT_ACC = 5;
-const SPRINT_ACC = 2 * DEFAULT_ACC;
-const WEIGHT_ACC = 4 * DEFAULT_ACC;
+const DEFAULT_ACC = 0.69;
+const SPRINT_ACC = 1.33;
+const WEIGHT_ACC = 8 * DEFAULT_ACC;
 
-const WALK_VELOCITY_CAP = 2;
-const SPRINT_VELOCITY_CAP = 1.5 * WALK_VELOCITY_CAP;
+const WALK_VELOCITY_CAP = 0.96; // 3 tiles/s
+const SPRINT_VELOCITY_CAP = 2 * WALK_VELOCITY_CAP; // 6 tiles/s
 
 interface Sensor {
   sensorBody;
@@ -100,7 +100,7 @@ export default class ControlledPlayer extends Player {
       ],
       frictionStatic: 0,
       frictionAir: 0.02,
-      friction: 0.1,
+      friction: 0.05,
     });
 
     // Initialize body props.
@@ -108,7 +108,7 @@ export default class ControlledPlayer extends Player {
     this.setFixedRotation();
 
     // Add some bouncing off surface.
-    this.setBounce(0.4);
+    this.setBounce(0.2);
 
     const collisionConfig = (callback) => ({
       objectA: [
@@ -154,15 +154,15 @@ export default class ControlledPlayer extends Player {
      */
 
     if (isCollidingBottom) {
-      this.setFriction(0.1);
+      this.setFriction(0.05);
     } else {
       this.setFriction(0);
     }
 
     /**
-     * Remove velocity when colliding horizontally.
+     * Remove velocity when colliding horizontally when jumping into walls.
      */
-    if (isCollidingLeft || isCollidingRight) {
+    if (!isCollidingBottom && (isCollidingLeft || isCollidingRight)) {
       this.velocity.x = 0;
     }
 
@@ -284,7 +284,7 @@ export default class ControlledPlayer extends Player {
      * Check if player tries to and can jump.
      */
     if (up.isDown && isCollidingBottom) {
-      this.setVelocityY(-7);
+      this.setVelocityY(-5.5);
       this.updateState(Movement.Jump);
     }
 

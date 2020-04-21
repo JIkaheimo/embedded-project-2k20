@@ -25,7 +25,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
   protected prevMovementState = Movement.None;
   protected xDirection = XDirection.None;
 
-  readonly velocity = {
+  public velocity = {
     x: 0,
     y: 0,
   };
