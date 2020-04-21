@@ -37,6 +37,7 @@ io.on('connection', (socket) => {
       x: 0,
       y: 0,
     },
+    movementState: 0,
   };
 
   console.log('a user connected');
@@ -62,9 +63,9 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('new player', player);
   });
 
-  socket.on('player update', (position, velocity) => {
+  socket.on('player update', ({ position, velocity, movementState }) => {
     // Update player position and velocity
-    player = { ...player, position, velocity };
+    player = { ...player, position, velocity, movementState };
     // Broadcast new data to other clients.
     socket.broadcast.emit('player update', player);
   });

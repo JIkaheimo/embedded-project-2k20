@@ -15,7 +15,7 @@ const physics: Phaser.Types.Core.PhysicsConfig = {
     gravity: {
       y: 1, // default matter gravity.
     },
-    debug: false,
+    debug: true,
   },
 };
 

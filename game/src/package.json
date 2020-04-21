@@ -11,12 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "matt": "0.0.5",
     "matter": "^0.2.0",
+    "matter-js": "^0.14.2",
     "phaser": "^3.22.0",
     "phaser-matter-collision-plugin": "^0.10.2",
     "socket.io-client": "^2.3.0"
   },
   "devDependencies": {
+    "@types/matter-js": "^0.14.2",
     "parcel": "^1.12.4",
     "typescript": "^3.8.3"
   }

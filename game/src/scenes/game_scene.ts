@@ -8,6 +8,7 @@ import Player from '../entities/Player';
 
 import io from 'socket.io-client';
 import { ScaleModes } from 'phaser';
+import ControlledPlayer from '../entities/ControlledPlayer';
 
 const BACKGROUND_LAYER = 'background';
 const BASE_LAYER = 'terrain';
@@ -69,7 +70,7 @@ function create() {
   this.matter.world.convertTilemapLayer(baseLayer);
 
   this.otherPlayers = {};
-  console.log(this.isSpectator);
+
   if (this.isSpectator) {
     initSpectator(this);
   } else {
@@ -84,20 +85,30 @@ function create() {
 
   this.serverSocket.on('new player', function ({ id, position: { x, y } }) {
     // Add player model.
-    console.log(x, y);
-    scene.otherPlayers[id] = new Player(scene, x, y, false);
+
+    scene.otherPlayers[id] = new Player(scene, x, y);
   });
 
   this.serverSocket.on('remove player', function (id) {
     // Remove player model.
-    scene.otherPlayers[id].sprite.destroy();
+    scene.otherPlayers[id].destroy();
     delete scene.otherPlayers[id];
   });
 
-  this.serverSocket.on('player update', function ({ id, position, velocity }) {
+  this.serverSocket.on('player update', function ({
+    id,
+    position,
+    velocity,
+    movementState,
+  }) {
     if (scene.otherPlayers[id]) {
-      scene.otherPlayers[id].sprite.setPosition(position.x, position.y);
-      scene.otherPlayers[id].sprite.setVelocity(velocity.x, velocity.y);
+      // Get the updated player.
+      const player = scene.otherPlayers[id];
+
+      // Update player.
+      player.setPosition(position.x, position.y);
+      player.updateState(movementState);
+      player.updateVelocity(velocity);
     }
   });
 }
@@ -105,18 +116,22 @@ function create() {
 function update(time, delta) {}
 
 function sendPlayerData() {
-  const { position, velocity } = this.player.sprite.body;
-  this.serverSocket.emit('player update', position, velocity);
+  const { movementState } = this.player;
+  const { position, velocity } = this.player.body;
+  this.serverSocket.emit('player update', {
+    position,
+    velocity,
+    movementState,
+  });
 }
 
 function initSpectator(scene) {
   scene.serverSocket.on('init players', function (players) {
-    console.log(players);
     addPlayers(scene, players);
 
     const spectatorCamera = scene.cameras.main;
     spectatorCamera.startFollow(
-      scene.otherPlayers[players[0].id].sprite,
+      scene.otherPlayers[players[0].id],
       false,
       0.5,
       0.5,
@@ -143,7 +158,6 @@ function addPlayers(scene, players) {
       scene,
       player.position.x,
       player.position.y,
-      false,
     );
   }
 }
@@ -154,7 +168,7 @@ function initPlayer(scene) {
   const spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
   // Spawn the player.
-  scene.player = new Player(scene, spawn.x, spawn.y);
+  scene.player = new ControlledPlayer(scene, spawn.x, spawn.y);
 
   // Allow controlling.
   scene.controls = scene.input.keyboard.createCursorKeys();
@@ -164,7 +178,7 @@ function initPlayer(scene) {
   // Setup camera to follow player.
   const playerCamera = scene.cameras.main;
 
-  playerCamera.startFollow(scene.player.sprite, false, 0.5, 0.5);
+  playerCamera.startFollow(scene.player, false, 0.5, 0.5);
   playerCamera.setZoom(3);
   playerCamera.roundPixels = true;
 
@@ -177,13 +191,13 @@ function initPlayer(scene) {
   );
 
   scene.time.addEvent({
-    delay: 50,
+    delay: 40,
     callback: sendPlayerData,
     callbackScope: scene,
     loop: true,
   });
 
-  scene.serverSocket.emit('new player', scene.player.sprite.body.position);
+  scene.serverSocket.emit('new player', scene.player.body.position);
 }
 
 export default {
