@@ -47,7 +47,7 @@ export default class ControlledPlayer extends Player {
       0.63 * scaledHeight,
       0.7 * scaledWidth,
       0.7 * scaledHeight,
-      {},
+      { chamfer: { radius: 3 } },
     );
 
     // Create collision sensors.
@@ -55,9 +55,9 @@ export default class ControlledPlayer extends Player {
       bottom: {
         sensorBody: Bodies.rectangle(
           0.5 * scaledWidth,
-          scaledHeight + 1,
-          0.65 * scaledWidth,
-          1,
+          scaledHeight,
+          0.5 * scaledWidth,
+          0.1,
           {
             isSensor: true,
           },
@@ -66,10 +66,10 @@ export default class ControlledPlayer extends Player {
       },
       left: {
         sensorBody: Bodies.rectangle(
-          0.15 * scaledWidth - 1,
+          0.11 * scaledWidth,
           0.63 * scaledHeight,
-          1,
-          0.6 * scaledHeight,
+          0.1,
+          0.55 * scaledHeight,
           {
             isSensor: true,
           },
@@ -78,10 +78,10 @@ export default class ControlledPlayer extends Player {
       },
       right: {
         sensorBody: Bodies.rectangle(
-          0.85 * scaledWidth + 1,
+          0.89 * scaledWidth,
           0.63 * scaledHeight,
-          1,
-          0.6 * scaledHeight,
+          0.1,
+          0.55 * scaledHeight,
           {
             isSensor: true,
           },
@@ -107,8 +107,8 @@ export default class ControlledPlayer extends Player {
     this.setExistingBody(compoundBody);
     this.setFixedRotation();
 
-    // Disable bounce.
-    this.setBounce(0);
+    // Add some bouncing off surface.
+    this.setBounce(0.4);
 
     const collisionConfig = (callback) => ({
       objectA: [
@@ -148,19 +148,36 @@ export default class ControlledPlayer extends Player {
     // Convert millis to seconds.
     deltaTime = deltaTime / 1000;
 
-    // Only apply friction when the player is touching the ground.
-    // (Removes "sticky" walls)
+    /**
+     * Only apply friction when the player is touching the ground.
+     * (Removes wall friction)
+     */
+
     if (isCollidingBottom) {
       this.setFriction(0.1);
     } else {
       this.setFriction(0);
     }
 
+    /**
+     * Remove velocity when colliding horizontally.
+     */
+    if (isCollidingLeft || isCollidingRight) {
+      this.velocity.x = 0;
+    }
+
+    /**
+     * Adjust vertical acceleration based on the sensor and input state.
+     */
     if (isCollidingBottom && !isCollidingLeft && left.isDown) {
+      // Player moving to left.
+
       if (shift.isDown) {
+        // Player running to left.
         this.updateState(Movement.Sprint);
 
         if (this.velocity.x > 0) {
+          // Remove more aceleration while turning.
           this.acceleration = -SPRINT_ACC - WEIGHT_ACC;
         } else {
           this.acceleration = -SPRINT_ACC;
@@ -169,24 +186,31 @@ export default class ControlledPlayer extends Player {
         this.updateState(Movement.Walk);
 
         if (this.velocity.x > 0) {
+          // Remove more acceleration while turning.
           this.acceleration = -DEFAULT_ACC - WEIGHT_ACC;
         } else {
           this.acceleration = -DEFAULT_ACC;
         }
       }
     } else if (isCollidingBottom && !isCollidingRight && right.isDown) {
+      // Player moving to right.
+
       if (shift.isDown) {
+        // Player running to right.
         this.updateState(Movement.Sprint);
 
         if (this.velocity.x < 0) {
+          // Add more acceleration while turning.
           this.acceleration = +SPRINT_ACC + WEIGHT_ACC;
         } else {
           this.acceleration = +SPRINT_ACC;
         }
       } else {
+        // Player walking to right.
         this.updateState(Movement.Walk);
 
         if (this.velocity.x < 0) {
+          // Add more acceleration while turning.
           this.acceleration = +DEFAULT_ACC + WEIGHT_ACC;
         } else {
           this.acceleration = +DEFAULT_ACC;
@@ -197,29 +221,32 @@ export default class ControlledPlayer extends Player {
 
       // Add a feel of weight when the character stops moving.
       if (this.velocity.x > 0) {
+        // Player turning to left.
         this.acceleration = Math.max(-WEIGHT_ACC, -this.velocity.x / deltaTime);
       } else if (this.velocity.x < 0) {
+        // Player turning to right.
         this.acceleration = Math.max(WEIGHT_ACC, this.velocity.x / deltaTime);
       } else {
+        // Player is not moving.
         this.updateState(Movement.Idle);
         this.acceleration = 0;
       }
     } else {
+      // Player is jumping.
       this.updateState(Movement.Jump);
       this.acceleration = 0;
     }
 
     /**
      *  Calculate new horizontal velocity.
-     *
-     *  vx = v0 + a * dt
+     *  (vx = v0 + a * dt)
      */
     this.velocity.x = this.velocity.x + this.acceleration * deltaTime;
 
     /**
      *  Limit horizontal velocity.
+     * (removes infinitely incrementing acceleration)
      */
-
     if (
       this.movementState === Movement.Sprint &&
       this.velocity.x > SPRINT_VELOCITY_CAP
@@ -248,18 +275,17 @@ export default class ControlledPlayer extends Player {
       this.velocity.x = -WALK_VELOCITY_CAP;
     }
 
+    /**
+     * Update velocity.
+     */
     this.setVelocityX(this.velocity.x);
 
+    /**
+     * Check if player tries to and can jump.
+     */
     if (up.isDown && isCollidingBottom) {
-      // Jump
       this.setVelocityY(-7);
       this.updateState(Movement.Jump);
-      this.isJumping = true;
-
-      this.jumpTimer = this.scene.time.addEvent({
-        delay: 500,
-        callback: () => (this.isJumping = false),
-      });
     }
 
     super.update();
