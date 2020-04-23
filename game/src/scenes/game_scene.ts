@@ -7,12 +7,14 @@ import characterXML from '../assets/characters/character.robot.xml';
 import Player from '../entities/Player';
 
 import io from 'socket.io-client';
-import { ScaleModes } from 'phaser';
+
 import ControlledPlayer from '../entities/ControlledPlayer';
 
 const BACKGROUND_LAYER = 'background';
 const BASE_LAYER = 'terrain';
 const GRASS_LAYER = 'grass';
+const TREE_LAYER = 'trees';
+const TREE_BG_LAYER = 'treesbg';
 
 function init({ isSpectator }) {
   this.isSpectator = isSpectator;
@@ -56,10 +58,19 @@ function create() {
   const baseLayer = map.createStaticLayer(BASE_LAYER, tileset, 0, 0);
 
   const grassLayer = map.createStaticLayer(GRASS_LAYER, tileset, 0, 0);
+  const treesLayer = map.createStaticLayer(TREE_LAYER, tileset, 0, 0);
+  const treesBgLayer = map.createStaticLayer(TREE_BG_LAYER, tileset, 0, 0);
+
+  baseLayer.setDepth(4);
   grassLayer.setDepth(3);
+  treesLayer.setDepth(2);
+  treesBgLayer.setDepth(0);
   //const ladderLayer = map.createStaticLayer(LADDER_LAYER, tileset, 0, 0);
 
   this.map = map;
+
+  this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+  this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
   // Set colliding tiles before converting the layers to Matter bodies.
   baseLayer.setCollisionByProperty({ collides: true });
@@ -141,12 +152,6 @@ function initSpectator(scene) {
     spectatorCamera.roundPixels = true;
 
     // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap.
-    spectatorCamera.setBounds(
-      0,
-      0,
-      scene.map.widthInPixels,
-      scene.map.heightInPixels,
-    );
   });
 
   scene.serverSocket.emit('new spectator');
@@ -173,6 +178,7 @@ function initPlayer(scene) {
 
   // Allow controlling.
   scene.controls = scene.input.keyboard.createCursorKeys();
+  scene.keys = scene.input.keyboard.addKeys('A,B,C,D,E');
 
   /** CAMERA **/
 
@@ -184,12 +190,6 @@ function initPlayer(scene) {
   playerCamera.roundPixels = true;
 
   // Constrain the camera so that it isn't allowed to move outside the width/height of tilemap.
-  playerCamera.setBounds(
-    0,
-    0,
-    scene.map.widthInPixels,
-    scene.map.heightInPixels,
-  );
 
   console.log(scene.player);
   scene.serverSocket.emit('new player', scene.player.body.position);

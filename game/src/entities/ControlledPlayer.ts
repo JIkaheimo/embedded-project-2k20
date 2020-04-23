@@ -136,6 +136,7 @@ export default class ControlledPlayer extends Player {
     // Get required state.
     const {
       scene: {
+        keys: { A },
         controls: { left, right, shift, up },
       },
       sensors: {
@@ -144,6 +145,8 @@ export default class ControlledPlayer extends Player {
         right: { state: isCollidingRight },
       },
     } = this;
+
+    const isSprinting = A.isDown || shift.isDown;
 
     this.xDirection = XDirection.None;
 
@@ -174,7 +177,7 @@ export default class ControlledPlayer extends Player {
     if (isCollidingBottom && !isCollidingLeft && left.isDown) {
       // Player moving to left.
 
-      if (shift.isDown) {
+      if (isSprinting) {
         // Player running to left.
         this.updateState(Movement.Sprint);
 
@@ -197,7 +200,7 @@ export default class ControlledPlayer extends Player {
     } else if (isCollidingBottom && !isCollidingRight && right.isDown) {
       // Player moving to right.
 
-      if (shift.isDown) {
+      if (isSprinting) {
         // Player running to right.
         this.updateState(Movement.Sprint);
 
