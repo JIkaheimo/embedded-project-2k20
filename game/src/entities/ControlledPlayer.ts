@@ -110,6 +110,8 @@ export default class ControlledPlayer extends Player {
     // Add some bouncing off surface.
     this.setBounce(0.2);
 
+    this.setPosition(x, y);
+
     const collisionConfig = (callback) => ({
       objectA: [
         this.sensors.bottom.sensorBody,

@@ -115,6 +115,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     // Disable rotation.
     this.setFixedRotation();
+
+    this.setPosition(x, y);
   }
 
   update() {

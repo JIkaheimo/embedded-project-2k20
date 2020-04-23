@@ -117,7 +117,7 @@ function update(time, delta) {}
 function sendPlayerData() {
   const { movementState } = this.player;
   const { position, velocity } = this.player.body;
-  console.log(position);
+
   this.serverSocket.emit('player update', {
     position,
     velocity,
@@ -165,7 +165,8 @@ function addPlayers(scene, players) {
 function initPlayer(scene) {
   // Randomize player spawn.
   const spawns = scene.map.getObjectLayer('spawns')['objects'];
-  const spawn = spawns[Math.floor(Math.random() * spawns.length)];
+
+  const spawn = spawns[Math.floor(Math.random() * (spawns.length - 1))];
 
   // Spawn the player.
   scene.player = new ControlledPlayer(scene, spawn.x, spawn.y);
@@ -190,6 +191,7 @@ function initPlayer(scene) {
     scene.map.heightInPixels,
   );
 
+  console.log(scene.player);
   scene.serverSocket.emit('new player', scene.player.body.position);
 
   scene.time.addEvent({
