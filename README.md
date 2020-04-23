@@ -4,6 +4,8 @@ Embedded systems programming project, spring 2020.
 
 [Open game](https://embedded-project.herokuapp.com/)
 
+[Demo video in Finnish](https://youtu.be/X3MPgWMlw3o)
+
 Developers: Jaakko Ikäheimo, Arttu Rusanen, Konsta Holm
 
 Technologies used:

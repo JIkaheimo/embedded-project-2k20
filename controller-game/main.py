@@ -25,7 +25,7 @@ def main():
     serial_reader = SerialReader(nucleo_port)
 
     # Create socket to communicate with the game server (not used)
-    sio = socketio.Client()
+    sio = socketio.Client()  
 
     # Initialize handlers
     handlers = init(controller_window, serial_reader, sio)
