@@ -85,7 +85,6 @@ function create() {
 
   this.serverSocket.on('new player', function ({ id, position: { x, y } }) {
     // Add player model.
-
     scene.otherPlayers[id] = new Player(scene, x, y);
   });
 

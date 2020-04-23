@@ -27,6 +27,7 @@ app.get('/c', (req, res) => {
 });
 
 io.on('connection', (socket) => {
+  // Create new initial player.
   let player = {
     id: socket.id,
     position: {
@@ -40,19 +41,12 @@ io.on('connection', (socket) => {
     movementState: 0,
   };
 
-  console.log('a user connected');
-
-  socket.on('move', (data) => {
-    console.log(data);
-  });
-
   socket.on('new spectator', () => {
-    console.log('Spectator connected');
+    // Spectator only needs players.
     socket.emit('init players', players);
   });
 
   socket.on('new player', (position, velocity) => {
-    console.log('Player connected');
     // Create new player object.
     player = { ...player, position, velocity };
     // Send other players to the client.
@@ -71,7 +65,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('Player disconnected.');
     // Remove player from server-tracked players.
     players = players.filter(({ id }) => id != socket.id);
     // Remove player with the id from other clients.

@@ -6,12 +6,12 @@ import Player, { XDirection, Movement } from './Player';
 import { Vector } from 'matter';
 
 // Constants for different accelerations and velocities.
-const DEFAULT_ACC = 0.69;
-const SPRINT_ACC = 1.33;
+const DEFAULT_ACC = 1.33;
+const SPRINT_ACC = 2.61;
 const WEIGHT_ACC = 8 * DEFAULT_ACC;
 
-const WALK_VELOCITY_CAP = 0.96; // 3 tiles/s
-const SPRINT_VELOCITY_CAP = 2 * WALK_VELOCITY_CAP; // 6 tiles/s
+const WALK_VELOCITY_CAP = 1.12; // 4 tiles/s
+const SPRINT_VELOCITY_CAP = 2 * WALK_VELOCITY_CAP; // 8 tiles/s
 
 interface Sensor {
   sensorBody;
@@ -167,7 +167,7 @@ export default class ControlledPlayer extends Player {
     }
 
     /**
-     * Adjust vertical acceleration based on the sensor and input state.
+     * Adjust horizontal acceleration based on the sensor and input state.
      */
     if (isCollidingBottom && !isCollidingLeft && left.isDown) {
       // Player moving to left.
