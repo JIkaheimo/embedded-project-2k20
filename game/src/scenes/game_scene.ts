@@ -117,6 +117,7 @@ function update(time, delta) {}
 function sendPlayerData() {
   const { movementState } = this.player;
   const { position, velocity } = this.player.body;
+  console.log(position);
   this.serverSocket.emit('player update', {
     position,
     velocity,
@@ -189,14 +190,14 @@ function initPlayer(scene) {
     scene.map.heightInPixels,
   );
 
+  scene.serverSocket.emit('new player', scene.player.body.position);
+
   scene.time.addEvent({
     delay: 40,
     callback: sendPlayerData,
     callbackScope: scene,
     loop: true,
   });
-
-  scene.serverSocket.emit('new player', scene.player.body.position);
 }
 
 export default {
